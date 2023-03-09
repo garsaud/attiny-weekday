@@ -1,13 +1,20 @@
 const uint8_t buttonPin = 1;
 const uint8_t ledPin = 0;
 
-#define SET_LED(value) (digitalWrite(ledPin, value ? HIGH : LOW))
-#define GET_BUTTON_VALUE() (digitalRead(buttonPin) == HIGH)
+#define DDRB (*(volatine unsigned char*)0x37)
+#define PORTD (*(volatine unsigned char*)0x38)
+
+#define PIN_OUTPUT(pin) (DDRB |= (1 << pin)
+#define PIN_INPUT(pin) (DDRB &= ~(1 << pin)
+#define LED_ON() (PORTD |= (1 << ledPin)
+#define LED_OFF() (PORTD &= ~(1 << ledPin)
+#define SET_LED(value) (value ? LED_ON() : LED_OFF())
+#define GET_BUTTON_VALUE() (PORTD & (1 << buttonPin))
 
 void setup()
 {
-  pinMode(ledPin, OUTPUT);
-  pinMode(buttonPin, INPUT);
+  PIN_OUTPUT(ledPin);
+  PIN_INPUT(buttonPin);
 
   delay(1000);
 }
@@ -33,7 +40,7 @@ void loop()
 
     inputDigits[i]++;
     waitForButtonUp();
-    
+
     if (inputDigits[i] >= 9) {
       // move on to next digit
       continue;
@@ -42,7 +49,7 @@ void loop()
   }
 
   delay(1000);
-  
+
   uint16_t y =
     inputDigits[0]*1000 +
     inputDigits[1]*100 +
