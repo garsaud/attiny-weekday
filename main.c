@@ -1,13 +1,15 @@
+#include <Arduino.h>
+
 const uint8_t buttonPin = 1;
 const uint8_t ledPin = 0;
 
-#define DDRB (*(volatine unsigned char*)0x37)
-#define PORTD (*(volatine unsigned char*)0x38)
+#define DDRB (*(volatile unsigned char*)0x37)
+#define PORTD (*(volatile unsigned char*)0x38)
 
-#define PIN_OUTPUT(pin) (DDRB |= (1 << pin)
-#define PIN_INPUT(pin) (DDRB &= ~(1 << pin)
-#define LED_ON() (PORTD |= (1 << ledPin)
-#define LED_OFF() (PORTD &= ~(1 << ledPin)
+#define PIN_OUTPUT(pin) (DDRB |= (1 << pin))
+#define PIN_INPUT(pin) (DDRB &= ~(1 << pin))
+#define LED_ON() (PORTD |= (1 << ledPin))
+#define LED_OFF() (PORTD &= ~(1 << ledPin))
 #define SET_LED(value) (value ? LED_ON() : LED_OFF())
 #define GET_BUTTON_VALUE() (PORTD & (1 << buttonPin))
 
