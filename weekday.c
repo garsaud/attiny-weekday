@@ -1,35 +1,21 @@
 #include <avr/io.h>
 #include <util/delay_basic.h>
 
+#include "weekday.h"
+
 const uint8_t buttonPin = 1;
 const uint8_t ledPin = 0;
 
-#ifndef DDRB
-  #define DDRB (*(volatile unsigned char*)0x37)
-#endif
-#ifndef PORTD
-  #define PORTD (*(volatile unsigned char*)0x38)
-#endif
-
-#define PIN_OUTPUT(pin) (DDRB |= (1 << pin))
-#define PIN_INPUT(pin) (DDRB &= ~(1 << pin))
-#define LED_ON() (PORTD |= (1 << ledPin))
-#define LED_OFF() (PORTD &= ~(1 << ledPin))
-#define SET_LED(value) (value ? LED_ON() : LED_OFF())
-#define GET_BUTTON_VALUE() (PORTD & (1 << buttonPin))
-
-#ifndef bool
-  #define bool signed char
-  #define false	0
-  #define true 1
-#endif
-
-void setup()
+int main()
 {
   PIN_OUTPUT(ledPin);
   PIN_INPUT(buttonPin);
 
   _delay_loop_2(100000);
+
+  while (1) {
+    loop();
+  }
 }
 
 uint8_t inputDigits[] = {0,0,0,0, 0,0, 0,0}; // yyyymmdd
