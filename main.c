@@ -1,10 +1,15 @@
-#include <Arduino.h>
+#include <avr/io.h>
+#include <util/delay_basic.h>
 
 const uint8_t buttonPin = 1;
 const uint8_t ledPin = 0;
 
-#define DDRB (*(volatile unsigned char*)0x37)
-#define PORTD (*(volatile unsigned char*)0x38)
+#ifndef DDRB
+  #define DDRB (*(volatile unsigned char*)0x37)
+#endif
+#ifndef PORTD
+  #define PORTD (*(volatile unsigned char*)0x38)
+#endif
 
 #define PIN_OUTPUT(pin) (DDRB |= (1 << pin))
 #define PIN_INPUT(pin) (DDRB &= ~(1 << pin))
@@ -13,12 +18,18 @@ const uint8_t ledPin = 0;
 #define SET_LED(value) (value ? LED_ON() : LED_OFF())
 #define GET_BUTTON_VALUE() (PORTD & (1 << buttonPin))
 
+#ifndef bool
+  #define bool signed char
+  #define false	0
+  #define true 1
+#endif
+
 void setup()
 {
   PIN_OUTPUT(ledPin);
   PIN_INPUT(buttonPin);
 
-  delay(1000);
+  _delay_loop_2(100000);
 }
 
 uint8_t inputDigits[] = {0,0,0,0, 0,0, 0,0}; // yyyymmdd
@@ -50,7 +61,7 @@ void loop()
     goto try_another_push;
   }
 
-  delay(1000);
+  _delay_loop_2(100000);
 
   uint16_t y =
     inputDigits[0]*1000 +
@@ -82,14 +93,14 @@ uint8_t dateToWeekday(uint16_t y, uint8_t m, uint8_t d)
 void waitForButtonUp()
 {
   do {
-    delay(10);
+    _delay_loop_2(1000);
   } while (GET_BUTTON_VALUE());
 }
 
 void waitForButtonDown()
 {
   do {
-    delay(100);
+    _delay_loop_2(10000);
   } while (!GET_BUTTON_VALUE());
 }
 
@@ -99,7 +110,7 @@ bool expectPush(uint16_t timeout)
     if (GET_BUTTON_VALUE()) {
       return true;
     }
-    delay(step);
+    _delay_loop_2(step);
   }
   return false;
 }
@@ -107,17 +118,17 @@ bool expectPush(uint16_t timeout)
 void flash()
 {
     SET_LED(true);
-    delay(10);
+    _delay_loop_2(10);
     SET_LED(false);
-    delay(10);
+    _delay_loop_2(10);
 }
 
 void renderWeekday(uint8_t w)
 {
   while (w--) {
     SET_LED(true);
-    delay(500);
+    _delay_loop_2(500);
     SET_LED(false);
-    delay(500);
+    _delay_loop_2(500);
   }
 }
