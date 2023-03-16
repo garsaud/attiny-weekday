@@ -1,17 +1,17 @@
 #include <avr/io.h>
 #include <util/delay_basic.h>
 
-#include "weekday.h"
-
 const uint8_t buttonPin = 1;
 const uint8_t ledPin = 0;
 
-int main()
+#include "weekday.h"
+
+bool expectPush(uint32_t timeout);
+
+int main(void)
 {
   PIN_OUTPUT(ledPin);
   PIN_INPUT(buttonPin);
-
-  _delay_loop_2(100000);
 
   while (1) {
     loop();
@@ -20,25 +20,28 @@ int main()
 
 uint8_t inputDigits[] = {0,0,0,0, 0,0, 0,0}; // yyyymmdd
 
-void loop()
+void loop(void)
 {
   // wait for first push
-  waitForButtonDown();
+  waitForButton(true);
 
   for (uint8_t i = 0; i < 8; i++) {
 
     // indicate we are recording a digit
     flash();
 
+    bool pushed;
+
     try_another_push:
-    bool pushed = expectPush(1000);
+    pushed = expectPush(300000);
     if (!pushed) {
       // move on to next digit
       continue;
     }
 
     inputDigits[i]++;
-    waitForButtonUp();
+    // wait for release
+    waitForButton(false);
 
     if (inputDigits[i] >= 9) {
       // move on to next digit
@@ -47,7 +50,7 @@ void loop()
     goto try_another_push;
   }
 
-  _delay_loop_2(100000);
+  wait(3);
 
   uint16_t y =
     inputDigits[0]*1000 +
@@ -76,23 +79,16 @@ uint8_t dateToWeekday(uint16_t y, uint8_t m, uint8_t d)
   return j ?: 7;
 }
 
-void waitForButtonUp()
+void waitForButton(bool state)
 {
   do {
-    _delay_loop_2(1000);
-  } while (GET_BUTTON_VALUE());
+    _delay_loop_2(100);
+  } while ((!GET_BUTTON_VALUE()) == state);
 }
 
-void waitForButtonDown()
+bool expectPush(uint32_t timeout)
 {
-  do {
-    _delay_loop_2(10000);
-  } while (!GET_BUTTON_VALUE());
-}
-
-bool expectPush(uint16_t timeout)
-{
-  for (uint8_t step = 10; timeout > 0; timeout -= step) {
+  for (uint8_t step = 100; timeout > 0; timeout -= step) {
     if (GET_BUTTON_VALUE()) {
       return true;
     }
@@ -101,20 +97,28 @@ bool expectPush(uint16_t timeout)
   return false;
 }
 
-void flash()
+void wait(uint8_t delay)
+{
+  while (delay--)
+  {
+    _delay_loop_2(0);
+  }
+}
+
+void flash(void)
 {
     SET_LED(true);
-    _delay_loop_2(10);
+    wait(1);
     SET_LED(false);
-    _delay_loop_2(10);
+    wait(1);
 }
 
 void renderWeekday(uint8_t w)
 {
   while (w--) {
     SET_LED(true);
-    _delay_loop_2(500);
+    wait(2);
     SET_LED(false);
-    _delay_loop_2(500);
+    wait(2);
   }
 }
